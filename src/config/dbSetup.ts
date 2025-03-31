@@ -46,7 +46,7 @@ const setupDatabase = async () => {
                 last_name VARCHAR(50) NOT NULL,
                 contact_number VARCHAR(20) NOT NULL,
                 email VARCHAR(100),
-                profile_photo VARCHAR(255),
+                profile_photo_url VARCHAR(255),
                 status ENUM('Draft', 'Active', 'Archived', 'Deleted') NOT NULL DEFAULT 'Draft',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

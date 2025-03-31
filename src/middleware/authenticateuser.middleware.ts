@@ -42,7 +42,8 @@ export const authenticateUser = async (
     }
 
     // Attach user details to the request object
-    req.user = { id: user.id, role: user.role };
+    req.user = { id: user.id, role: user.role, ...user };
+
     next();
   } catch (error) {
     res.status(403).json({ message: "Unauthorized: Invalid token" });

@@ -11,15 +11,14 @@ export const authorizeRolesAndOwner = (roles: string[], checkOwnership: boolean 
             res.status(401).json({ message: "Unauthorized: No user found" });
             return;
         }
-     
-           // If ownership is being checked, verify the user is the owner
-        if (checkOwnership && req.user.id === parseInt(req.params.id)) {
+           // If ownership is being checked, verify the user is the owner. .body is for form data type
+        if (checkOwnership && req.user.id === parseInt( req.body.owner_id || req.params.id)) {
             next();
             return
         }
 
         // Check if user has role
-        if (!req.user.role) {
+        if (!req.user.role || !roles.length) {
             res.status(403).json({ message: "Forbidden: User role missing" });
             return;
         }

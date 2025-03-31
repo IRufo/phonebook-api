@@ -5,7 +5,7 @@ export interface Contact {
     last_name: string;
     contact_number: string;
     email: string;
-    profile_photo?: string;  // Optional field
+    profile_photo_url?: string;  // Optional field
     created_at: Date;
     updated_at: Date;
   }
