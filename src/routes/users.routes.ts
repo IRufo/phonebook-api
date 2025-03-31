@@ -1,73 +1,22 @@
-import { Router, Request, Response } from 'express';
-import { ResultSetHeader } from 'mysql2';
-import pool from '../config/db';
+import { Router } from 'express';
+import { getUsers, getUserById, updateUser, deleteUser, activateUser, createUser } from '../controllers/user.controller';
+import { authenticateUser } from '../middleware/authenticateuser.middleware';
+import { authorizeRolesAndOwner } from '../middleware/authorizeRoleorOwner.middleware';
 
 const userRouter = Router();
+const roles = ["Super Admin", "Admin"]
 
-// Get all users
-userRouter.get('/', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const [users] = await pool.query('SELECT * FROM users');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'Database error' });
-  }
-});
+userRouter.get('/', authenticateUser, getUsers);
 
-// Create a user
-userRouter.post('/', async (req: Request, res: Response): Promise<void> => {
-  const { first_name, last_name, email, password, role } = req.body;
-  try {
-    const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO users (first_name, last_name, email, password, role) VALUES (?, ?, ?, ?, ?)',
-      [first_name, last_name, email, password, role]
-    );
+userRouter.get('/:id', authenticateUser, getUserById);
 
-    res.json({ message: 'User created', userId: result.insertId });
-  } catch (error) {
-    res.status(500).json({ error: 'Database error' });
-  }
-});
+userRouter.patch('/:id', authenticateUser, authorizeRolesAndOwner(roles, true), updateUser);
 
-// Update a user
-userRouter.put('/:id', async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  const { first_name, last_name, email } = req.body;
-  try {
-    const [result] = await pool.query<ResultSetHeader>(
-      'UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?',
-      [first_name, last_name, email, id]
-    );
+userRouter.delete('/:id', authenticateUser, authorizeRolesAndOwner(roles, true), deleteUser);
 
-    if (result.affectedRows === 0) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
+userRouter.patch("/activate/:id", authenticateUser, authorizeRolesAndOwner(roles), activateUser);
 
-    res.json({ message: 'User updated' });
-  } catch (error) {
-    res.status(500).json({ error: 'Database error' });
-  }
-});
+userRouter.post("/", authenticateUser, authorizeRolesAndOwner(roles), createUser);
 
-// Delete a user
-userRouter.delete('/:id', async (req: Request, res: Response): Promise<void> => {
-  const { id } = req.params;
-  try {
-    const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM users WHERE id = ?', 
-      [id]
-    );
-
-    if (result.affectedRows === 0) {
-      res.status(404).json({ error: 'User not found' });
-      return;
-    }
-
-    res.json({ message: 'User deleted' });
-  } catch (error) {
-    res.status(500).json({ error: 'Database error' });
-  }
-});
 
 export default userRouter;

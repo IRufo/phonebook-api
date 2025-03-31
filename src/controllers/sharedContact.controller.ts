@@ -1,9 +1,6 @@
 import { Request, Response } from "express";
 import pool from "../config/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 
 export const shareContact = async (req: Request, res: Response): Promise<void> => {

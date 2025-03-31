@@ -4,6 +4,7 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes";
 import contactRoutes from "./routes/contacts.routes";
+import userRoutes from "./routes/users.routes";
 import "./config/dbSetup";
 import initializeAdmin from "./config/initializeAdminUsers";
 
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactRoutes);
+app.use("/api/users", userRoutes);
 
 // Start Server
 const PORT = process.env.PORT;

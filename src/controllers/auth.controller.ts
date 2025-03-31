@@ -2,16 +2,13 @@ import { Request, Response } from "express";
 import pool from "../config/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const register = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { first_name, last_name, email, password } = req.body;
+        const { first_name, last_name, email, password } = req.body || {};
 
         if (!first_name || !last_name || !email || !password) {
             res.status(400).json({ message: "All fields are required" });
@@ -107,7 +104,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
         const { newPassword } = req.body;
 
         if (!authorization || !newPassword) {
-            res.status(400).json({ message: "Token and new password are required." });
+            res.status(400).json({ message: "Token and new password are required" });
             return;
         }
 
@@ -126,7 +123,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
         await pool.query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
 
-        res.json({ message: "Password reset successful" });
+        res.json({ message: "Password reset successfully" });
     } catch (error) {
         res.status(500).json({ message: "Invalid or expired token", error });
     }
