@@ -2,9 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import pool from "../config/db";
 import { RowDataPacket } from "mysql2/promise";
+import { User } from "../models";
 
 interface AuthRequest extends Request {
-  user?: { id: number; role: string };
+  user?: User;
 }
 
 export const authenticateUser = async (
@@ -20,29 +21,26 @@ export const authenticateUser = async (
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number; role: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as User
 
-    // Check if user exists in the database
     const [users] = await pool.query<RowDataPacket[]>(
       "SELECT id, role, status FROM users WHERE id = ?",
       [decoded.id]
     );
 
-    if (users.length === 0) {
+    if (!users.length) {
       res.status(401).json({ message: "Unauthorized: User does not exist" });
       return;
     }
 
     const user = users[0];
 
-    // Optional: Check if user is active
     if (user.status !== 'Active') {
       res.status(403).json({ message: "Unauthorized: User is inactive" });
       return;
     }
 
-    // Attach user details to the request object
-    req.user = { id: user.id, role: user.role, ...user };
+    req.user = user as User
 
     next();
   } catch (error) {

@@ -33,7 +33,6 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     if (last_name) updates.last_name = last_name;
     if (email) updates.email = email;
 
-    // Check if there are fields to update
     if (Object.keys(updates).length === 0) {
         res.status(400).json({ message: "No valid fields provided to update" });
         return;
@@ -44,7 +43,6 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         const setClause = Object.keys(updates).map((key) => `${key} = ?`).join(", ");
         const values = Object.values(updates);
 
-        // Execute the update query
         await pool.query(
             `UPDATE users SET ${setClause} WHERE id = ?`,
             [...values, id]

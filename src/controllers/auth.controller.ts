@@ -108,8 +108,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        // Extract token from the Authorization header
-        const token = authorization.split(' ')[1]; // Assuming 'Bearer <token>'
+        const token = authorization.split(' ')[1];
         
         if (!token) {
             res.status(401).json({ message: "Authorization token is required" });
