@@ -122,3 +122,11 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
         res.status(500).json({ success: false, message: "Invalid or expired token", error });
     }
 };
+
+export const verifyToken = (req: any, res: Response) => {
+    try {
+      res.json({ success: true, message: "Token is valid", data: req.user });
+    } catch (error) {
+      res.status(401).json({ success: false, message: "Invalid or expired token" });
+    }
+};
