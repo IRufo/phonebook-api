@@ -53,15 +53,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         const { id, role, password: hashedPassword, status } = users[0];
 
-        if (status !== "Active") {
-            res.status(403).json({ success: false, message: `Account is ${status}. Please contact an administrator.` });
-            return;
-        }
-
         const isMatch = await bcrypt.compare(password, hashedPassword);
 
         if (!isMatch) {
             res.status(401).json({ success: false, message: "Invalid credentials" });
+            return;
+        }
+
+        if (status !== "Active") {
+            res.status(403).json({ success: false, message: `Account is ${status}. Please contact an administrator.` });
             return;
         }
 
