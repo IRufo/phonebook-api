@@ -54,9 +54,13 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
-        await pool.query<ResultSetHeader>(
-            "UPDATE users SET status = ? WHERE id = ?",
-            ["Deleted", id]);
+
+        await Promise.all([
+            pool.query<ResultSetHeader>("UPDATE users SET status = ? WHERE id = ?", ["Deleted", id]),
+            pool.query<ResultSetHeader>("UPDATE users SET contacts = ? WHERE owner_id = ?", ["Deleted", id]),
+            pool.query<ResultSetHeader>("UPDATE shared_contacts SET status = ? WHERE owner_id = ?", ["Deleted", id])
+          ]);
+          
         res.json({ success: true, message: "User deleted" });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error });
