@@ -28,7 +28,7 @@ const setupDatabase = async () => {
         // Create tables
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
+                id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
                 first_name VARCHAR(50) NOT NULL,
                 last_name VARCHAR(50) NOT NULL,
                 email VARCHAR(100) NOT NULL UNIQUE,
@@ -40,8 +40,8 @@ const setupDatabase = async () => {
             );
 
             CREATE TABLE IF NOT EXISTS contacts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                owner_id INT NOT NULL,
+                id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+                owner_id CHAR(36) NOT NULL,
                 first_name VARCHAR(50) NOT NULL,
                 last_name VARCHAR(50) NOT NULL,
                 contact_number VARCHAR(20) NOT NULL,
@@ -54,10 +54,10 @@ const setupDatabase = async () => {
             );      
 
             CREATE TABLE IF NOT EXISTS shared_contacts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                contact_id INT NOT NULL,
-                shared_with_user_id INT NOT NULL,
-                owner_id INT NOT NULL,
+                id CHAR(36) NOT NULL PRIMARY KEY DEFAULT (UUID()),
+                contact_id CHAR(36) NOT NULL,
+                shared_with_user_id CHAR(36) NOT NULL,
+                owner_id CHAR(36) NOT NULL,
                 status ENUM('Draft', 'Active', 'Archived', 'Deleted') NOT NULL DEFAULT 'Draft',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

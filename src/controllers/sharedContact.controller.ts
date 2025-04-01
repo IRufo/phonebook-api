@@ -28,7 +28,8 @@ export const getSharedContacts = async (req: Request, res: Response): Promise<vo
 export const unshareContact = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     try {
-        await pool.query("DELETE FROM shared_contacts WHERE id = ?", [id]);
+        await pool.query<ResultSetHeader>(
+            "UPDATE users SET shared_contacts = ? WHERE id = ?", ["Deleted", id]);
         res.json({ message: "Contact unshared" });
     } catch (error) {
         res.status(500).json({ message: "Database error", error });

@@ -90,6 +90,11 @@ export const deleteContact = async (req: AuthRequest, res: Response): Promise<vo
     try {
         await pool.query<ResultSetHeader>(
             "UPDATE users SET contacts = ? WHERE id = ?", ["Deleted", id]);
+           
+        await pool.query<ResultSetHeader>(
+            "UPDATE shared_contacts SET status = ? WHERE contact_id = ?",
+            ["Deleted", id]
+        );
         res.json({ message: "Contact deleted" });
     } catch (error) {
         res.status(500).json({ message: "Database error", error });

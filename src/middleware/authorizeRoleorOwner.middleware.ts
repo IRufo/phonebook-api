@@ -12,7 +12,7 @@ export const authorizeRolesAndOwner = (roles: string[], checkOwnership: boolean 
             return;
         }
            // If ownership is being checked, verify the user is the owner. .body is for form data type
-        if (checkOwnership && req.user.id === parseInt( req.body.owner_id || req.params.id)) {
+        if (checkOwnership && req.user.id === (req.body.owner_id || req.params.id)) {
             next();
             return
         }
