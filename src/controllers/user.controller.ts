@@ -6,9 +6,9 @@ import bcrypt from "bcryptjs";
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
         const [users] = await pool.query<RowDataPacket[]>("SELECT * FROM users");
-        res.json(users);
+        res.json({ success: true, users });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
 
@@ -16,30 +16,27 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     const { id } = req.params;
     try {
         const [user] = await pool.query<RowDataPacket[]>("SELECT * FROM users WHERE id = ?", [id]);
-        res.json(user);
+        res.json({ success: true, user });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
-
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
     const { first_name, last_name, email } = req.body;
 
-    // Validate input (only update fields that are provided)
     const updates: any = {};
     if (first_name) updates.first_name = first_name;
     if (last_name) updates.last_name = last_name;
     if (email) updates.email = email;
 
     if (Object.keys(updates).length === 0) {
-        res.status(400).json({ message: "No valid fields provided to update" });
+        res.status(400).json({ success: false, message: "No valid fields provided to update" });
         return;
     }
 
     try {
-        // Dynamically build the SET part of the query based on the provided fields
         const setClause = Object.keys(updates).map((key) => `${key} = ?`).join(", ");
         const values = Object.values(updates);
 
@@ -48,12 +45,11 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
             [...values, id]
         );
 
-        res.json({ message: "User updated successfully" });
+        res.json({ success: true, message: "User updated successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
-
 
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -61,9 +57,9 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
         await pool.query<ResultSetHeader>(
             "UPDATE users SET status = ? WHERE id = ?",
             ["Deleted", id]);
-        res.json({ message: "User deleted" });
+        res.json({ success: true, message: "User deleted" });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
 
@@ -76,13 +72,13 @@ export const activateUser = async (req: Request, res: Response): Promise<void> =
         );
 
         if (result.affectedRows === 0) {
-            res.status(404).json({ message: "User not found or already active" });
+            res.status(404).json({ success: false, message: "User not found or already active" });
             return;
         }
 
-        res.json({ message: "User activated successfully" });
+        res.json({ success: true, message: "User activated successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
 
@@ -91,7 +87,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
         const { first_name, last_name, email, password } = req.body || {};
 
         if (!first_name || !last_name || !email || !password) {
-            res.status(400).json({ message: "All fields are required" });
+            res.status(400).json({ success: false, message: "All fields are required" });
             return;
         }
 
@@ -102,14 +98,13 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
             [first_name, last_name, email, hashedPassword, 'Active']
         );
 
-        res.status(201).json({ message: "Created user successfully", userId: result.insertId });
+        res.status(201).json({ success: true, message: "Created user successfully", userId: result.insertId });
     } catch (err: any) {
-        // Check for specific database error code for duplicate entry
         if (err.code === "ER_DUP_ENTRY") {
-            res.status(409).json({ message: "Email already in use" });
+            res.status(409).json({ success: false, message: "Email already in use" });
             return;
         }
 
-        res.status(500).json({ message: "Database error", error: err });
+        res.status(500).json({ success: false, message: "Database error", error: err });
     }
 };

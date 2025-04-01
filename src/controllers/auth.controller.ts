@@ -11,36 +11,33 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const { first_name, last_name, email, password } = req.body || {};
 
         if (!first_name || !last_name || !email || !password) {
-            res.status(400).json({ message: "All fields are required" });
+            res.status(400).json({ success: false, message: "All fields are required" });
             return;
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const [result] = await pool.query<ResultSetHeader>(
+        await pool.query<ResultSetHeader>(
             "INSERT INTO users (first_name, last_name, email, password, status) VALUES (?, ?, ?, ?, ?)",
             [first_name, last_name, email, hashedPassword, 'Pending']
         );
 
-        res.status(201).json({ message: "Registration request sent! Status: Pending", userId: result.insertId });
+        res.status(201).json({ success: true, message: "Registration request sent! Status: Pending" });
     } catch (err: any) {
-        // Check for specific database error code for duplicate entry
         if (err.code === "ER_DUP_ENTRY") {
-            res.status(409).json({ message: "Email already in use" });
+            res.status(409).json({ success: false, message: "Email already in use" });
             return;
         }
-
-        res.status(500).json({ message: "Database error", error: err });
+        res.status(500).json({ success: false, message: "Database error", error: err });
     }
 };
-
 
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            res.status(401).json({ message: "Email and password are required." });
+            res.status(401).json({ success: false, message: "Email and password are required." });
             return;
         }
 
@@ -50,33 +47,32 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         );
 
         if (users.length === 0) {
-            res.status(401).json({ message: "Invalid credentials" });
+            res.status(401).json({ success: false, message: "Invalid credentials" });
             return;
         }
 
         const { id, role, password: hashedPassword, status } = users[0];
 
         if (status !== "Active") {
-            res.status(403).json({ message: `Account is ${status}. Please contact an administrator.` });
+            res.status(403).json({ success: false, message: `Account is ${status}. Please contact an administrator.` });
             return;
         }
 
         const isMatch = await bcrypt.compare(password, hashedPassword);
 
         if (!isMatch) {
-            res.status(401).json({ message: "Invalid credentials" });
+            res.status(401).json({ success: false, message: "Invalid credentials" });
             return;
         }
 
         const token = jwt.sign({ id, role }, JWT_SECRET, { expiresIn: "1h" });
 
-        res.json({ token });
+        res.json({ success: true, token });
     } catch (err) {
-        res.status(500).json({ message: "Database error", error: err });
+        res.status(500).json({ success: false, message: "Database error", error: err });
     }
 };
 
-// Forgot password (Generate reset token)
 export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email } = req.body;
@@ -84,34 +80,33 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
         const [users] = await pool.query<RowDataPacket[]>("SELECT * FROM users WHERE email = ?", [email]);
 
         if (users.length === 0) {
-             res.status(404).json({ message: "User not found" });
+             res.status(404).json({ success: false, message: "User not found" });
              return;
         }
 
         const { id } = users[0];
         const resetToken = jwt.sign({ userId: id }, JWT_SECRET, { expiresIn: "15m" });
 
-        res.json({ message: "Password reset token generated", resetToken });
+        res.json({ success: true, message: "Password reset token generated", resetToken });
     } catch (error) {
-        res.status(500).json({ message: "Database error", error });
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };
 
-// Reset password (Using reset token)
 export const resetPassword = async (req: Request, res: Response): Promise<void> => {
     try {
         const { authorization } = req.headers;
         const { newPassword } = req.body;
 
         if (!authorization || !newPassword) {
-            res.status(400).json({ message: "Token and new password are required" });
+            res.status(400).json({ success: false, message: "Token and new password are required" });
             return;
         }
 
         const token = authorization.split(' ')[1];
         
         if (!token) {
-            res.status(401).json({ message: "Authorization token is required" });
+            res.status(401).json({ success: false, message: "Authorization token is required" });
             return;
         }
 
@@ -122,8 +117,8 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
         await pool.query("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
 
-        res.json({ message: "Password reset successfully" });
+        res.json({ success: true, message: "Password reset successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Invalid or expired token", error });
+        res.status(500).json({ success: false, message: "Invalid or expired token", error });
     }
 };
