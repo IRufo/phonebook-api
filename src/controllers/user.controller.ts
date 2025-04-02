@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const [users] = await pool.query<RowDataPacket[]>("SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users");
+        const [users] = await pool.query<RowDataPacket[]>("SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users  WHERE role NOT IN ('Admin', 'Super Admin')");
         res.json({ success: true, data: users });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error });
@@ -117,7 +117,7 @@ export const getUsersByStatus = async (req: Request, res: Response): Promise<voi
     try {
         const { status } = req.params; 
 
-        const query = "SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users WHERE status = ?";
+        const query = "SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users WHERE status = ? AND role NOT IN ('Admin', 'Super Admin')";
         const [users] = await pool.query<RowDataPacket[]>(query, [status]);
 
         res.json({ success: true, data: users });
