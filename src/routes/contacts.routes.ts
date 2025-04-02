@@ -13,8 +13,9 @@ contactRouter.get('/:id', authenticateUser, getContactById);
 
 contactRouter.post('/', authenticateUser, upload, addContact);
 
+contactRouter.patch('/delete/:id', authenticateUser, authorizeRolesAndOwner([], true), deleteContact);
+
 contactRouter.patch('/:id', authenticateUser,  upload, authorizeRolesAndOwner([], true), updateContact);
 
-contactRouter.delete('/:id', authenticateUser, authorizeRolesAndOwner([], true), deleteContact);
 
 export default contactRouter;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUsers, getUserById, updateUser, deleteUser, activateUser, createUser } from '../controllers/user.controller';
+import { getUsers, getUserById, updateUser, deleteUser, activateUser, createUser, getUsersByStatus } from '../controllers/user.controller';
 import { authenticateUser } from '../middleware/authenticateuser.middleware';
 import { authorizeRolesAndOwner } from '../middleware/authorizeRoleorOwner.middleware';
 
@@ -10,6 +10,8 @@ userRouter.get('/', authenticateUser, getUsers);
 
 userRouter.get('/:id', authenticateUser, getUserById);
 
+userRouter.get("/status/:status", authenticateUser, getUsersByStatus);
+
 userRouter.patch('/:id', authenticateUser, authorizeRolesAndOwner(roles, true), updateUser);
 
 userRouter.delete('/:id', authenticateUser, authorizeRolesAndOwner(roles, true), deleteUser);
@@ -17,6 +19,8 @@ userRouter.delete('/:id', authenticateUser, authorizeRolesAndOwner(roles, true),
 userRouter.patch("/activate/:id", authenticateUser, authorizeRolesAndOwner(roles), activateUser);
 
 userRouter.post("/", authenticateUser, authorizeRolesAndOwner(roles), createUser);
+
+
 
 
 export default userRouter;

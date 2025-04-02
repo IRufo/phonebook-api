@@ -24,7 +24,7 @@ export const authenticateUser = async (
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as User
 
     const [users] = await pool.query<RowDataPacket[]>(
-      "SELECT id, role, status FROM users WHERE id = ?",
+      "SELECT id, role, status, first_name, last_name FROM users WHERE id = ?",
       [decoded.id]
     );
 
@@ -44,6 +44,7 @@ export const authenticateUser = async (
 
     next();
   } catch (error) {
+    console.log(error)
     res.status(403).json({ message: "Unauthorized: Invalid token" });
   }
 };

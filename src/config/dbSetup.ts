@@ -44,7 +44,7 @@ const setupDatabase = async () => {
                 owner_id CHAR(36) NOT NULL,
                 first_name VARCHAR(50) NOT NULL,
                 last_name VARCHAR(50) NOT NULL,
-                contact_number VARCHAR(20) NOT NULL,
+                phone_number VARCHAR(20) NOT NULL,
                 email VARCHAR(100),
                 profile_photo_url VARCHAR(255),
                 status ENUM('Draft', 'Active', 'Archived', 'Deleted') NOT NULL DEFAULT 'Draft',

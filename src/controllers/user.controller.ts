@@ -5,8 +5,8 @@ import bcrypt from "bcryptjs";
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const [users] = await pool.query<RowDataPacket[]>("SELECT * FROM users");
-        res.json({ success: true, users });
+        const [users] = await pool.query<RowDataPacket[]>("SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users");
+        res.json({ success: true, data: users });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error });
     }
@@ -71,8 +71,8 @@ export const activateUser = async (req: Request, res: Response): Promise<void> =
     const { id } = req.params;
     try {
         const [result] = await pool.query<ResultSetHeader>(
-            "UPDATE users SET status = ? WHERE id = ? AND status = ?",
-            ["Active", id, "Pending"]
+            "UPDATE users SET status = ? WHERE id = ?",
+            ["Active", id]
         );
 
         if (result.affectedRows === 0) {
@@ -110,5 +110,18 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
         }
 
         res.status(500).json({ success: false, message: "Database error", error: err });
+    }
+};
+
+export const getUsersByStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { status } = req.params; 
+
+        const query = "SELECT id, first_name, last_name, email, created_at, updated_at, status FROM users WHERE status = ?";
+        const [users] = await pool.query<RowDataPacket[]>(query, [status]);
+
+        res.json({ success: true, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Database error", error });
     }
 };

@@ -11,6 +11,7 @@ export const authorizeRolesAndOwner = (roles: string[], checkOwnership: boolean 
             res.status(401).json({ message: "Unauthorized: No user found" });
             return;
         }
+        console.log(req.body.owner_id ,  req.params.id)
            // If ownership is being checked, verify the user is the owner. .body is for form data type
         if (checkOwnership && req.user.id === (req.body.owner_id || req.params.id)) {
             next();

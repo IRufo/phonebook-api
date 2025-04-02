@@ -8,8 +8,8 @@ interface AuthRequest extends Request {
 
 export const getContacts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const [contacts] = await pool.query<RowDataPacket[]>("SELECT * FROM contacts");
-        res.json({ success: true, contacts });
+        const [contacts] = await pool.query<RowDataPacket[]>("SELECT * FROM contacts where status = ?", ['Active']);
+        res.json({ success: true, data: contacts });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error });
     }
@@ -30,19 +30,19 @@ export const getContactById = async (req: Request, res: Response): Promise<void>
 };
 
 export const addContact = async (req: AuthRequest, res: Response): Promise<void> => {
-    const { first_name, last_name, contact_number, email } = req.body;
+    const { first_name, last_name, phone_number, email } = req.body;
     const owner_id = req.user?.id;
     const profile_photo_url = req.file ? req.file.filename : null;
 
-    if (!owner_id || !first_name || !last_name || !contact_number || !email) {
+    if (!owner_id || !first_name || !last_name || !phone_number || !email) {
         res.status(400).json({ success: false, message: "All required fields must be provided" });
         return;
     }
 
     try {
         const [result] = await pool.query<ResultSetHeader>(
-            "INSERT INTO contacts (owner_id, first_name, last_name, contact_number, email, profile_photo_url) VALUES (?, ?, ?, ?, ?, ?)",
-            [owner_id, first_name, last_name, contact_number, email, profile_photo_url]
+            "INSERT INTO contacts (owner_id, first_name, last_name, phone_number, email, profile_photo_url, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [owner_id, first_name, last_name, phone_number, email, profile_photo_url, 'Active']
         );
         res.status(201).json({ success: true, message: "Contact added successfully", contactId: result.insertId });
     } catch (error) {
@@ -52,10 +52,10 @@ export const addContact = async (req: AuthRequest, res: Response): Promise<void>
 
 export const updateContact = async (req: AuthRequest, res: Response): Promise<void> => {
     const { id } = req.params;
-    const { first_name, last_name, contact_number, email } = req.body;
+    const { first_name, last_name, phone_number, email } = req.body;
     const profile_photo_url = req.file ? req.file.filename : undefined;
 
-    const { setClause, values } = Object.entries({ first_name, last_name, contact_number, email, profile_photo_url })
+    const { setClause, values } = Object.entries({ first_name, last_name, phone_number, email, profile_photo_url })
     .reduce(
       (acc, [key, value]) => {
         if (value !== undefined) {
@@ -87,7 +87,7 @@ export const deleteContact = async (req: AuthRequest, res: Response): Promise<vo
     const { id } = req.params;
     try {
         await pool.query<ResultSetHeader>(
-            "UPDATE users SET contacts = ? WHERE id = ?", ["Deleted", id]);
+            "UPDATE contacts SET status = ? WHERE id = ?", ["Deleted", id]);
            
         await pool.query<ResultSetHeader>(
             "UPDATE shared_contacts SET status = ? WHERE contact_id = ?",
