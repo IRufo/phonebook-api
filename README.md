@@ -1,6 +1,6 @@
 ﻿# phonebook-api
 
-Live URL: [Phonebook Portal](https://phonebook-portal-fdeipr5z4-irish-rivas-projects.vercel.app/login)
+Live URL: [Phonebook Portal](https://phonebook-portal-woo1.vercel.app/login)
 
 For access, you can use the following credentials:
 
